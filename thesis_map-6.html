@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ahmad al-Sharaa: Jihadist, Rebel, Statesman?</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inconsolata:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ch1:       #b87333; --ch1-light: #fdf0df; --ch1-dark:  #7a4a1e;
+    --ch2:       #8b2020; --ch2-light: #fae8e8; --ch2-dark:  #5c1010;
+    --ch3:       #2a5c6e; --ch3-light: #dff0f5; --ch3-dark:  #173d4a;
+    --ch4:       #6b4c8a; --ch4-light: #ede5f5; --ch4-dark:  #3d2459;
+    --ch5:       #3d6b42; --ch5-light: #dff0df; --ch5-dark:  #1e3d22;
+    --bg:        #0f0d0b; --sidebar:   #161310; --border:    #2e2820;
+    --text:      #e6ddd2; --muted:     #7a7068; --accent:    #c9a96e;
+    --hover:     #1e1a16; --panel:     #1a1612;
+  }
+  html, body { height: 100%; font-family: 'EB Garamond', Georgia, serif; background: var(--bg); }
+  #app { display: flex; height: 100vh; overflow: hidden; }
+
+  #sidebar { width:300px; min-width:300px; background:var(--sidebar); display:flex; flex-direction:column; border-right:1px solid var(--border); z-index:1000; overflow:hidden; }
+
+  #header { padding:18px 18px 14px; border-bottom:1px solid var(--border); background:linear-gradient(180deg,#1a1510 0%,var(--sidebar) 100%); }
+  .eyebrow { font-family:'Inconsolata',monospace; font-size:8.5px; letter-spacing:3px; text-transform:uppercase; color:var(--accent); margin-bottom:8px; opacity:.85; }
+  #header h1 { font-size:16.5px; font-weight:500; color:var(--text); line-height:1.3; margin-bottom:4px; }
+  #header h1 em { font-style:italic; color:var(--accent); }
+  #header .byline { font-size:11px; color:var(--muted); font-style:italic; line-height:1.4; }
+
+  #filters { padding:11px 18px; border-bottom:1px solid var(--border); display:flex; flex-direction:column; gap:7px; }
+  .filter-label { font-family:'Inconsolata',monospace; font-size:8px; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted); }
+  .btns { display:flex; gap:5px; flex-wrap:wrap; }
+  .btn { font-family:'Inconsolata',monospace; font-size:9px; letter-spacing:.2px; padding:4px 8px; border-radius:2px; border:1px solid var(--border); cursor:pointer; transition:all .15s; background:transparent; color:var(--muted); white-space:nowrap; }
+  .btn:hover { color:var(--text); border-color:var(--muted); }
+  .btn.on-all { background:#2a2318; color:var(--accent); border-color:var(--accent); }
+  .btn.on-ch1 { background:var(--ch1-light); color:var(--ch1-dark); border-color:var(--ch1); }
+  .btn.on-ch2 { background:var(--ch2-light); color:var(--ch2-dark); border-color:var(--ch2); }
+  .btn.on-ch3 { background:var(--ch3-light); color:var(--ch3-dark); border-color:var(--ch3); }
+  .btn.on-ch4 { background:var(--ch4-light); color:var(--ch4-dark); border-color:var(--ch4); }
+  .btn.on-ch5 { background:var(--ch5-light); color:var(--ch5-dark); border-color:var(--ch5); }
+
+  #list { flex:1; overflow-y:auto; padding:4px 0 8px; }
+  #list::-webkit-scrollbar { width:3px; }
+  #list::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+  .divider { padding:10px 18px 4px; font-family:'Inconsolata',monospace; font-size:8.5px; letter-spacing:2px; text-transform:uppercase; border-top:1px solid var(--border); margin-top:4px; }
+  .divider:first-child { border-top:none; margin-top:0; }
+
+  .item { padding:8px 18px; cursor:pointer; border-left:3px solid transparent; transition:background .1s; }
+  .item:hover, .item.on { background:var(--hover); }
+  .item.ch1 { border-left-color:var(--ch1); }
+  .item.ch2 { border-left-color:var(--ch2); }
+  .item.ch3 { border-left-color:var(--ch3); }
+  .item.ch4 { border-left-color:var(--ch4); }
+  .item.ch5 { border-left-color:var(--ch5); }
+  .item.off { display:none; }
+
+  .item-name { font-size:12.5px; font-weight:500; color:var(--text); line-height:1.25; }
+  .item-sub { font-size:10px; color:var(--muted); font-style:italic; margin-top:1px; }
+  .tags { margin-top:3px; display:flex; gap:3px; flex-wrap:wrap; }
+  .tag { font-family:'Inconsolata',monospace; font-size:7.5px; letter-spacing:.6px; padding:1px 4px; border-radius:2px; text-transform:uppercase; }
+  .tag-ch1 { background:var(--ch1-light); color:var(--ch1-dark); }
+  .tag-ch2 { background:var(--ch2-light); color:var(--ch2-dark); }
+  .tag-ch3 { background:var(--ch3-light); color:var(--ch3-dark); }
+  .tag-ch4 { background:var(--ch4-light); color:var(--ch4-dark); }
+  .tag-ch5 { background:var(--ch5-light); color:var(--ch5-dark); }
+
+  #footer { padding:9px 18px; border-top:1px solid var(--border); font-family:'Inconsolata',monospace; font-size:8px; color:var(--muted); letter-spacing:.3px; line-height:1.6; }
+
+  #map { flex:1; }
+
+  .leaflet-popup-content-wrapper { border-radius:3px !important; box-shadow:0 6px 28px rgba(0,0,0,.32) !important; padding:0 !important; overflow:hidden; font-family:'EB Garamond',Georgia,serif; border:none !important; min-width:260px; max-width:310px; }
+  .leaflet-popup-content { margin:0 !important; width:auto !important; }
+  .leaflet-popup-tip { background:#fff !important; }
+  .pop-head { padding:10px 14px 8px; border-bottom:1px solid rgba(0,0,0,.07); }
+  .pop-ch { font-family:'Inconsolata',monospace; font-size:8px; letter-spacing:1.5px; text-transform:uppercase; font-weight:600; display:block; margin-bottom:3px; }
+  .pop-name { font-size:15px; font-weight:600; color:#18130e; line-height:1.2; }
+  .pop-sub { font-size:11px; font-style:italic; color:#7a6e62; margin-top:2px; }
+  .pop-also { margin-top:5px; font-family:'Inconsolata',monospace; font-size:7.5px; letter-spacing:.8px; color:#9a8e82; text-transform:uppercase; display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+  .pop-body { padding:9px 14px 11px; font-size:12.5px; color:#2e261e; line-height:1.58; }
+
+  .pin { border-radius:50%; border:2.5px solid rgba(255,255,255,.92); box-shadow:0 2px 10px rgba(0,0,0,.38); display:flex; align-items:center; justify-content:center; font-family:'Inconsolata',monospace; font-weight:700; color:white; cursor:pointer; transition:transform .12s,box-shadow .12s; }
+  .pin:hover { transform:scale(1.18); box-shadow:0 4px 16px rgba(0,0,0,.45); }
+  .leaflet-control-attribution { font-size:9px !important; background:rgba(255,255,255,.75) !important; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sidebar">
+    <div id="header">
+      <div class="eyebrow">Thesis Reference Map</div>
+      <h1>Ahmad al-Sharaa:<br><em>Jihadist, Rebel, Statesman?</em></h1>
+      <div class="byline">By Claire Burkhardt</div>
+    </div>
+    <div id="filters">
+      <div class="filter-label">Filter by chapter</div>
+      <div class="btns">
+        <button class="btn on-all" data-f="all">All</button>
+        <button class="btn" data-f="ch1">Ch. I</button>
+        <button class="btn" data-f="ch2">Ch. II</button>
+        <button class="btn" data-f="ch3">Ch. III</button>
+        <button class="btn" data-f="ch4">Ch. IV</button>
+        <button class="btn" data-f="ch5">Ch. V</button>
+      </div>
+    </div>
+    <div id="list"></div>
+    <div id="footer">Click a pin or name to zoom in.<br>Color = first chapter cited. Tags = cross-references.</div>
+  </div>
+  <div id="map"></div>
+</div>
+
+<script>
+const CH = {
+  ch1: { short:'Ch. I',   long:"Chapter I: What's Past is Prologue",       col:'#b87333', light:'#fdf0df', dark:'#7a4a1e' },
+  ch2: { short:'Ch. II',  long:'Chapter II: Like Father, Like Son?',        col:'#8b2020', light:'#fae8e8', dark:'#5c1010' },
+  ch3: { short:'Ch. III', long:'Chapter III: The Jihadist University',      col:'#2a5c6e', light:'#dff0f5', dark:'#173d4a' },
+  ch4: { short:'Ch. IV',  long:'Chapter IV: Undercover Extremists',         col:'#6b4c8a', light:'#ede5f5', dark:'#3d2459' },
+  ch5: { short:'Ch. V',   long:"Chapter V: In the Shade of al-Qaeda",       col:'#3d6b42', light:'#dff0df', dark:'#1e3d22' },
+};
+
+const LOCS = [
+  // ── CHAPTER I ─────────────────────────────────────────────────────────────
+  { id:'fiq', ch:'ch1', also:[], major:false,
+    name:'Fiq', sub:'occupied Golan Heights',
+    lat:32.7793, lng:35.6933,
+    desc:'Ancestral al-Sharaa village; the family clan owned over 80% of local land for centuries, tracing lineage to the Prophet. Site of the 1920 anti-French uprising — family members stormed the French garrison, raised the Syrian flag, then fled to Jordan after being betrayed by their own host. Now under Israeli military occupation.' },
+
+  { id:'yarmuk', ch:'ch1', also:[], major:false,
+    name:'Yarmuk River', sub:'Syria–Jordan border crossing',
+    lat:32.715, lng:35.726,
+    desc:'Recurring al-Sharaa family escape route. Family members crossed here fleeing French death sentences in the 1920s. Husayn al-Sharaa crossed the same smuggler route decades later to flee Ba\'thist imprisonment in the 1960s.' },
+
+  { id:'shajara', ch:'ch1', also:[], major:false,
+    name:'al-Shajara', sub:'Daraa region',
+    lat:32.7748, lng:35.8849,
+    desc:'Border town where fleeing al-Sharaa family members took refuge with a tribal family after the 1920 uprising — before being betrayed by a family member of their host, who reported them to the French while they ate and celebrated.' },
+
+  { id:'qunaitra', ch:'ch1', also:[], major:false,
+    name:'Qunaytra', sub:'Golan governorate',
+    lat:33.1263, lng:35.8258,
+    desc:'Husayn al-Sharaa\'s home governorate — a border region adjacent to the DMZ with Israel. Most of its territory was occupied by Israel in 1967. Husayn won a Provincial Council seat as an independent in 1972, before growing disillusioned with Ba\'thist-dominated local politics.' },
+
+  { id:'daraa', ch:'ch1', also:[], major:false,
+    name:'Daraa', sub:'southern Syria',
+    lat:32.6266, lng:36.1035,
+    desc:'The al-Sharaa family resettled here after Israel occupied the Golan in 1967. Later became the symbolic birthplace of the 2011 Syrian Revolution, when protests in Daraa\'s streets and mosques — sparked by teenagers jailed for anti-Assad graffiti — ignited the uprising that defined the following decade.' },
+
+  { id:'damascus', ch:'ch1', also:['ch2','ch3','ch4','ch5'], major:true,
+    name:'Damascus', sub:'capital',
+    lat:33.5132, lng:36.2768,
+    desc:'Syria\'s capital. Arab Kingdom capital (1920). Husayn moved his family here as oil advisor to the PM; site of the 2005 Damascus Declaration. Ahmad walked its old alleyways before boarding a bus to Iraq in 2003. The Assad regime organized Iraq-bound jihad buses from outside Damascus mosques, the US Embassy, and parade grounds. Ch. IV: Jabhat al-Nusra\'s opening attacks were here — a double suicide bombing of a military-security compound (Dec. 23, 2011) and a second bombing killing 26 security personnel (Jan. 6, 2012).' },
+
+  { id:'duma', ch:'ch1', also:[], major:false,
+    name:'Duma', sub:'Damascus suburbs',
+    lat:33.5684, lng:36.4075,
+    desc:'Damascus suburb where Husayn and fellow Syrian student refugees from Baghdad were halted by the military in 1967. They had boarded a commercial bus from Iraq intending to fight Israel in the Six-Day War — and were turned back here before reaching the front.' },
+
+  { id:'idlib', ch:'ch1', also:['ch3','ch4','ch5'], major:true,
+    name:'Idlib', sub:'northwest Syria',
+    lat:35.9327, lng:36.6413,
+    desc:'Rebel-controlled territory and long-time HTS base. The al-Sharaa family settled here in 2020. The night before the 2024 Aleppo offensive, Husayn urged Ahmad to hold Idlib rather than risk overextension. Ch. IV: Sharaa had better luck recruiting here than in Damascus; Nusra established its power base here after pushing ISIS largely out of the governorate by April 2014. Ch. V: Idlib City captured by Jaish al-Fatah (Nusra-led coalition) in March 2015 — the only governance capital taken since Raqqa fell to ISIS. Nusra\'s courts, Sharia administration, and governance experiments were centered here.' },
+
+  { id:'aleppo', ch:'ch1', also:['ch4','ch5'], major:true,
+    name:'Aleppo', sub:'northern Syria',
+    lat:36.2021, lng:37.1343,
+    desc:'Target of HTS\'s surprise November 2024 offensive — "By God, they had liberated rural western Aleppo." Ch. IV: Nusra participated in rebel operations here from July 2012; Adnani was initially sent by Sharaa to command the Northern Region before being demoted; the Aleppo Sharia Commission was established winter 2012; journalist Theo Padnos was held and tortured in an Aleppo hospital basement. Ch. V: ISIS gained influence here during 2013–2014; the city\'s fall to the regime in December 2016 refueled resistance merger calls.' },
+
+  { id:'amman', ch:'ch1', also:['ch3','ch5'], major:false,
+    name:'Amman', sub:'Jordan',
+    lat:31.9454, lng:35.9284,
+    desc:'Ch. I: Recurring al-Sharaa family refuge — family members sheltered here with Jordanian Bedouin tribes after fleeing French death sentences in the 1920s; Husayn ended up in Jordanian custody after crossing the Yarmuk River in the 1960s. Ch. III: The al-Sharaa family relocated here briefly after leaving Syria in 2013. Ch. V: In June 2016, the US proposed establishing a joint implementation group here to coordinate airstrikes against both Nusra and ISIS — a development Nusra viewed as existential.' },
+
+  // ── CHAPTER II ────────────────────────────────────────────────────────────
+  { id:'mezzeh', ch:'ch2', also:[], major:false,
+    name:'Mezzeh', sub:'southwest Damascus neighborhood',
+    lat:33.496, lng:36.248,
+    desc:'The upper-class Damascus neighborhood where the al-Sharaa family settled after returning from Riyadh. Ahmad grew up here as a nazīḥ — displaced — among the regime elite. Exiled Hamas leader Khaled Meshaal moved into the same neighborhood, attending Ahmad\'s local Shāfi\'ī mosque and feeding the increasingly politicized atmosphere that pushed Ahmad toward Iraq.' },
+
+  { id:'sednaya', ch:'ch2', also:['ch4'], major:false,
+    name:'Sednaya Prison', sub:'north of Damascus',
+    lat:33.722, lng:36.371,
+    desc:'Ch. II: The Assad regime\'s primary detention center for Islamist opponents — infamous for systematic torture and extrajudicial killings. Ahmad\'s companions were sent here after the mukhabarat picked them up post-Iraq-trip #1. Ahmad alone talked his way free, claiming he was heading to a shisha bar. Ch. IV: Sednaya graduates released en masse in Assad\'s 2011 prisoner amnesty formed the backbone of JN\'s early recruiting network — pre-organized, pre-vetted, and waiting for a leader. Ahmad stayed his first night back in Syria at a Sednaya graduate\'s house in al-Hasakah.' },
+
+  { id:'abukamal', ch:'ch2', also:['ch3','ch4'], major:false,
+    name:'Abu Kamal', sub:'Iraq–Syria border',
+    lat:34.451, lng:40.916,
+    desc:'Ch. II/III: The canonical jihadist crossing between Iraq and Syria on the Euphrates. Ahmad crossed here into Iraq in 2003 and 2005. After release from Camp Bucca in 2011, he crossed back with five men, suicide vests, and $50,000 to launch Jabhat al-Nusra. Ch. IV: In August 2012, Sharaa personally welcomed eight senior AQI leaders — including Adnani — at this border crossing, the event that set off the JN-ISIS internal power struggle.' },
+
+  // ── CHAPTER III ───────────────────────────────────────────────────────────
+  { id:'bucca', ch:'ch3', also:[], major:false,
+    name:'Camp Bucca', sub:'southern Iraq, near Kuwait border',
+    lat:30.0697, lng:47.7822,
+    desc:'US military detention facility in far southern Iraq — the chapter\'s primary setting. Ahmad entered spring 2006 and was released to Iraqi custody April 2010. Described as the incubator of the Islamic State: 19 of IS\'s 20 most senior leaders were alumni. "If there was no American prison in Iraq, there would be no IS now. Bucca was a factory. It made us all." Ahmad networked here with Adnani and Anbari, who later vouched for him to Baghdadi.' },
+
+  // ── CHAPTERS I / II ───────────────────────────────────────────────────────
+  { id:'baghdad', ch:'ch1', also:['ch2'], major:true,
+    name:'Baghdad', sub:'Iraq',
+    lat:33.3152, lng:44.3661,
+    desc:'Ch. I: Husayn al-Sharaa\'s university exile (1963–1969), where he studied Economics and Political Science on an Iraqi government stipend after fleeing Ba\'thist imprisonment. He romanticized the city throughout his life, later idealizing Saddam Hussein as "a defender of the Sunni cause against foreign invasions." Ch. II: Destination of the Assad regime\'s 2003 Iraq-bound jihad buses organized outside Damascus mosques and the US Embassy. Ahmad and fellow Islamists arrived here roughly two weeks before the American invasion.' },
+
+  { id:'mosul', ch:'ch2', also:['ch3'], major:false,
+    name:'Mosul', sub:'northern Iraq',
+    lat:36.335, lng:43.1189,
+    desc:'Ch. II: Ahmad joined Salafi jihadi organization Saharan al-Mujahideen and became a bomb maker here during his second Iraq tour. Arrested by American forces planting IEDs outside Mosul on May 14, 2005, under a fake Iraqi identity. Ch. III: After release from Camp Bucca in 2011, Ahmad returned to Mosul and lobbied Anbari for the job of leading IS\'s new Syrian branch. Baghdadi gave him a two-month trial command here before commissioning him for Syria. Ch. V (contextual): ISIS took Mosul in June 2014, using it as a springboard to tip the balance of power in Deir ez-Zour.' },
+
+  // ── CHAPTER IV ────────────────────────────────────────────────────────────
+  { id:'hasakah', ch:'ch4', also:[], major:false,
+    name:'al-Hasakah', sub:'northeastern Syria',
+    lat:36.50, lng:40.75,
+    desc:'Ahmad al-Sharaa\'s first night back in Syria after crossing from Iraq in August 2011. He stayed at the house of a Sednaya Prison graduate here. Also listed as one of Jabhat al-Nusra\'s original national cell network cities — alongside Daraa, Homs, Hama, Idlib, Aleppo, Raqqa, and Deir ez-Zour — established in the group\'s first months of operations.' },
+
+  { id:'deirezzour', ch:'ch4', also:['ch5'], major:false,
+    name:'Deir ez-Zour', sub:'eastern Syria',
+    lat:35.336, lng:40.1406,
+    desc:'Ch. IV: Abu Maria al-Qahtani, Nusra\'s first Sharia chief, was based here before linking up with Sharaa. Under Qahtani\'s leadership, Nusra seized the oil-rich east and sold captured oil to Turkey — Nusra\'s primary revenue source. Guardian journalist Ghaith Abdul-Ahad interviewed JN commanders here in July 2012. Ch. V: ISIS launched a major offensive on Nusra\'s oil assets here in January–February 2014. By July 2014, after Qahtani\'s forces collapsed, ISIS controlled over 60% of Syria\'s potential oil production.' },
+
+  { id:'homs', ch:'ch4', also:[], major:false,
+    name:'Homs', sub:'central Syria',
+    lat:34.7324, lng:36.7137,
+    desc:'Ch. IV: Named as one of the cities where AQI/ISI had pre-existing safe houses that Sharaa\'s group linked up with in fall 2011 to recruit and plan. One of Jabhat al-Nusra\'s original national cell network cities established in the group\'s first months of operations.' },
+
+  { id:'hama', ch:'ch4', also:[], major:false,
+    name:'Hama', sub:'central Syria',
+    lat:35.1318, lng:36.7537,
+    desc:'Ch. IV: One of Jabhat al-Nusra\'s original national cell network cities. Part of the "Northern Region" Adnani was appointed to command before Sharaa stripped him of the role. Adnani toured Hama (and Idlib) for five days before returning to Damascus, where Sharaa immediately informed him he had been removed from command.' },
+
+  { id:'raqqa', ch:'ch4', also:['ch5'], major:false,
+    name:'Raqqa', sub:'north-central Syria',
+    lat:35.95, lng:39.01,
+    desc:'Ch. IV: One of JN\'s original cell network cities. Sharaa personally toured Raqqa in spring 2013 to shore up commander loyalty, revealing his identity for the first time, just before Baghdadi announced the forced ISIS merger. Ch. V: First Syrian city to fall predominantly under ISIS control after the April 2013 split. On April 25, 2013, ISIS released an execution video of three men shot in the head in Raqqa\'s central traffic circle, setting the tone for ISIS operations in Syria.' },
+
+  // ── CHAPTER V ─────────────────────────────────────────────────────────────
+  { id:'qusayr', ch:'ch5', also:[], major:false,
+    name:'Qusayr', sub:'Homs countryside',
+    lat:34.51, lng:36.58,
+    desc:'Hezbollah forces prominently helped Assad retake this city in May–June 2013 — the first major Hezbollah intervention in the Syrian war. The fall of Qusayr marked the conflict\'s decisive turn toward overt sectarianism. "In Lebanon, Hezbollah handed out sweets the day the city was captured." Sharaa responded by labeling Hezbollah "rafidi" forces and accusing them of a Shiite conspiracy against Sunnis.' },
+
+  { id:'bayda', ch:'ch5', also:[], major:false,
+    name:'al-Bayda / Banyas', sub:'Tartus coast',
+    lat:35.64, lng:35.94,
+    desc:'Between May 2–4, 2013, Assad regime forces executed several hundred Sunni civilians in these two adjacent coastal towns, per Human Rights Watch documentation. One of the most significant documented regime massacres of the war. Used by Salafi-Islamist ideologues — including Nusra\'s own voices — to justify increasingly sectarian rhetoric and to validate jihadist claims of a deliberate campaign against ahl al-Sunnah.' },
+
+  { id:'ghouta', ch:'ch5', also:[], major:false,
+    name:'East Ghouta', sub:'Damascus suburbs',
+    lat:33.51, lng:36.45,
+    desc:'Site of Assad\'s August 21, 2013 sarin gas attack — the largest chemical weapons attack of the Syrian war, killing at least 1,429 people. Sharaa personally responded with his "Operation Volcano of Revenge" declaration, announcing "Ghazawahs [battles] launched against the Nusayri villages for every chemical-rocket that fell on our people in al-Sham."' },
+
+  { id:'latakia', ch:'ch5', also:[], major:false,
+    name:'Latakia', sub:'northwest coast',
+    lat:35.5317, lng:35.7917,
+    desc:'Two significant narrative roles. (1) August 2013: Islamist factions including Nusra launched an offensive on this Alawite-majority coastal region. A Human Rights Watch report accused Nusra, ISIS, and allies of killing ~190 civilians; over 200 Alawite women and children were taken hostage as bargaining chips for prisoner exchanges. (2) October 2015: In response to Russian airstrikes, Sharaa explicitly called for rocket attacks on "Nusayrī villages in Latakia," urging fighters to bombard them "with hundreds of rockets daily."' },
+
+  { id:'qalblawza', ch:'ch5', also:[], major:false,
+    name:'Qalb Lawza', sub:'Idlib province — Druze village',
+    lat:36.079, lng:36.611,
+    desc:'Site of the June 2015 Druze massacre — one of the most documented atrocities committed under Nusra\'s governance of Idlib. Nusra commander Abu Abd al-Rahman al-Tunisi, who had previously overseen the forced conversion of local Druze communities to Sunni Islam, murdered 23 Druze men here over a property dispute. When Druze villagers resisted al-Tunisi\'s attempts to seize a household, he accused the residents of blasphemy and killed them. Nusra officially labeled it "an unjustified error that occurred without the leadership\'s knowledge" and removed al-Tunisi from command. An internal investigation committee — reportedly led by rising moderate Abd al-Rahim Atoun, who claims he personally requested al-Tunisi\'s execution — ultimately sentenced him to only two months in prison. The episode illustrated the gap between Nusra\'s stated governance principles and its ability (or willingness) to enforce accountability on hardliner commanders. The Druze of Idlib had already been pressured into forced conversion; the massacre exposed the fragility of whatever protection Nusra\'s leadership offered to minority communities under its control.' },
+
+  { id:'eleb', ch:'ch5', also:[], major:false,
+    name:'Eastern Lebanon', sub:'Bekaa Valley region',
+    lat:33.85, lng:35.90,
+    desc:'Nusra and FSA factions launched retaliatory rocket attacks here in mid-March 2013 in response to Hezbollah\'s increasingly prominent military intervention in Syria, particularly around Qusayr. Reflected the war\'s expanding regional dimension as Hezbollah systematically blurred the Lebanon–Syria border in support of the Assad regime, drawing the conflict into Lebanese territory.' },
+];
+
+// ── MAP ───────────────────────────────────────────────────────────────────────
+const map = L.map('map', { center:[34.5,39.0], zoom:5, zoomControl:false, minZoom:4, maxZoom:15, attributionControl:false });
+L.control.zoom({ position:'bottomright' }).addTo(map);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  subdomains:'abcd', maxZoom:19
+}).addTo(map);
+
+// ── MARKERS ───────────────────────────────────────────────────────────────────
+const layers = L.layerGroup().addTo(map);
+const mMap = {};
+
+function icon(loc) {
+  const c = CH[loc.ch], sz = loc.major ? 30 : 24, fs = loc.major ? 11 : 9.5;
+  const init = loc.name.replace(/[()\/]/g,'').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  return L.divIcon({
+    className:'',
+    html:`<div class="pin" style="width:${sz}px;height:${sz}px;background:${c.col};font-size:${fs}px;">${init}</div>`,
+    iconSize:[sz,sz], iconAnchor:[sz/2,sz/2], popupAnchor:[0,-(sz/2+8)],
+  });
+}
+
+function popup(loc) {
+  const c = CH[loc.ch];
+  const alsoHtml = loc.also.length
+    ? `<div class="pop-also">Also in: ${loc.also.map(k=>`<span class="tag tag-${k}">${CH[k].short}</span>`).join('')}</div>`
+    : '';
+  return `<div>
+    <div class="pop-head" style="background:${c.light}">
+      <span class="pop-ch" style="color:${c.dark}">${c.short} — ${c.long}</span>
+      <div class="pop-name">${loc.name}</div>
+      ${loc.sub ? `<div class="pop-sub">${loc.sub}</div>` : ''}
+      ${alsoHtml}
+    </div>
+    <div class="pop-body">${loc.desc}</div>
+  </div>`;
+}
+
+LOCS.forEach(loc => {
+  const m = L.marker([loc.lat, loc.lng], { icon:icon(loc) }).bindPopup(popup(loc), { maxWidth:310, minWidth:260 });
+  m.addTo(layers);
+  mMap[loc.id] = m;
+});
+
+// ── SIDEBAR LIST ──────────────────────────────────────────────────────────────
+const listEl = document.getElementById('list');
+const chOrder = ['ch1','ch2','ch3','ch4','ch5'];
+const chTitles = {
+  ch1: "Chapter I — What's Past is Prologue",
+  ch2: 'Chapter II — Like Father, Like Son?',
+  ch3: 'Chapter III — The Jihadist University',
+  ch4: 'Chapter IV — Undercover Extremists',
+  ch5: "Chapter V — In the Shade of al-Qaeda",
+};
+
+chOrder.forEach(ck => {
+  const locs = LOCS.filter(l => l.ch === ck);
+  if (!locs.length) return;
+  const div = document.createElement('div');
+  div.className = 'divider'; div.style.color = CH[ck].col; div.textContent = chTitles[ck];
+  listEl.appendChild(div);
+  locs.forEach(loc => {
+    const el = document.createElement('div');
+    el.className = `item ${loc.ch}`; el.dataset.ch = loc.ch; el.dataset.id = loc.id;
+    const tagsHtml = loc.also.length
+      ? `<div class="tags">${[loc.ch,...loc.also].map(k=>`<span class="tag tag-${k}">${CH[k].short}</span>`).join('')}</div>`
+      : '';
+    el.innerHTML = `<div class="item-name">${loc.name}</div>${loc.sub ? `<div class="item-sub">${loc.sub}</div>` : ''}${tagsHtml}`;
+    el.addEventListener('click', () => {
+      map.setView([loc.lat, loc.lng], 11, { animate:true, duration:.7 });
+      setTimeout(() => mMap[loc.id].openPopup(), 720);
+      document.querySelectorAll('.item').forEach(i => i.classList.remove('on'));
+      el.classList.add('on');
+    });
+    listEl.appendChild(el);
+  });
+});
+
+// ── FILTERS ───────────────────────────────────────────────────────────────────
+document.querySelectorAll('.btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const f = btn.dataset.f;
+    document.querySelectorAll('.btn').forEach(b => b.className = 'btn');
+    btn.classList.add(f === 'all' ? 'on-all' : `on-${f}`);
+
+    document.querySelectorAll('.item').forEach(el =>
+      el.classList.toggle('off', f !== 'all' && el.dataset.ch !== f)
+    );
+    document.querySelectorAll('.divider').forEach(d => {
+      let sib = d.nextSibling, any = false;
+      while (sib && !sib.classList?.contains('divider')) {
+        if (!sib.classList?.contains('off')) any = true;
+        sib = sib.nextSibling;
+      }
+      d.style.display = any ? '' : 'none';
+    });
+
+    layers.clearLayers();
+    LOCS.forEach(loc => {
+      if (f === 'all' || loc.ch === f || loc.also.includes(f)) mMap[loc.id].addTo(layers);
+    });
+
+    if (f === 'all') {
+      map.flyTo([34.5, 39.0], 5, { duration:.8 });
+    } else {
+      const vis = LOCS.filter(l => l.ch === f || l.also.includes(f));
+      if (vis.length) map.flyToBounds(L.latLngBounds(vis.map(l=>[l.lat,l.lng])).pad(.3), { duration:.8 });
+    }
+  });
+});
+
+map.fitBounds([[29.5, 35.5], [37.5, 48.0]], { padding:[20,20] });
+</script>
+</body>
+</html>
